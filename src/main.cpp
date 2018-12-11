@@ -4,6 +4,8 @@
 @license:	see LICENSE
 */
 
+//TODO: Change city function to take max
+
 #include <iostream>
 #include <cstdlib>
 
@@ -33,6 +35,10 @@
 
 int main() {
 
+
+
+
+	int num_cities = 9;
 	ACO *ANTS = new ACO (NUMBEROFANTS, NUMBEROFCITIES, 
 			 			ALPHA, BETA, Q, RO, TAUMAX,
 			 			INITIALCITY);

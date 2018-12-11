@@ -63,7 +63,7 @@ void ACO::init () {
 			DELTAPHEROMONES[i][j] 	= 0.0;
 		}
 	}	
-
+	//Routes num_ants*num_cities
 	ROUTES = new int*[NUMBEROFANTS];
 	for (int i=0; i<NUMBEROFANTS; i++) {
 		ROUTES[i] = new int[NUMBEROFCITIES];
@@ -79,17 +79,20 @@ void ACO::init () {
 	}
 }
 
-
+//Adds connection in graph and pheromone
 void ACO::connectCITIES (int cityi, int cityj) {
 	GRAPH[cityi][cityj] = 1;
 	PHEROMONES[cityi][cityj] = randoms -> Uniforme() * TAUMAX;
+	//Symmetric
 	GRAPH[cityj][cityi] = 1;
 	PHEROMONES[cityj][cityi] = PHEROMONES[cityi][cityj];
 }
+//Set x,y position. Will be removed
 void ACO::setCITYPOSITION (int city, double x, double y) {
 	CITIES[city][0] = x;
 	CITIES[city][1] = y;
 }
+//Util
 void ACO::printPHEROMONES () {	
 	cout << " PHEROMONES: " << endl;
 	cout << "  | ";
@@ -125,15 +128,17 @@ void ACO::printPHEROMONES () {
 	cout << endl;
 }
 
-
+//Util will be removed
 double ACO::distance (int cityi, int cityj) {
 	return (double) 
 		sqrt (pow (CITIES[cityi][0] - CITIES[cityj][0], 2) + 
  			  pow (CITIES[cityi][1] - CITIES[cityj][1], 2));
 }
+//Checks if edge exists
 bool ACO::exists (int cityi, int cityc) {
 	return (GRAPH[cityi][cityc] == 1);
 }
+//Answers: Has ant k visited city c?
 bool ACO::vizited (int antk, int c) {
 	for (int l=0; l<NUMBEROFCITIES; l++) {
 		if (ROUTES[antk][l] == -1) {
@@ -145,6 +150,8 @@ bool ACO::vizited (int antk, int c) {
 	}
 	return false;
 }
+
+//Gives transition probability
 double ACO::PHI (int cityi, int cityj, int antk) {
 	double ETAij = (double) pow (1 / distance (cityi, cityj), BETA);
 	double TAUij = (double) pow (PHEROMONES[cityi][cityj],   ALPHA);
@@ -162,6 +169,7 @@ double ACO::PHI (int cityi, int cityj, int antk) {
 	return (ETAij * TAUij) / sum;
 }
 
+//Gives length of tour
 double ACO::length (int antk) {
 	double sum = 0.0;
 	for (int j=0; j<NUMBEROFCITIES-1; j++) {
@@ -169,29 +177,55 @@ double ACO::length (int antk) {
 	}
 	return sum;
 }
-
+// Function to select the next city based on weird stuff
 int ACO::city () {
 	double xi = randoms -> Uniforme();
+	cout<<"xi = "<<xi<<endl;
 	int i = 0;
 	double sum = PROBS[i][0];
+	cout<<"Sum = "<<sum<<endl;
 	while (sum < xi) {
 		i++;
 		sum += PROBS[i][0];
 	}
+	cout<<"final i = "<<i<<endl;
+	cout<<"Correspondig final city = "<<(int) PROBS[i][1]<<endl;
 	return (int) PROBS[i][1];
 }
 
+// Function to select the next city with highest probability. Count is max cities left
+int ACO::city (int count) {
+	double maxi=-1;
+	int maxi_index = -1;
+	for(int i=0;i<count;i++){
+		double sum = PROBS[i][0];
+		if (sum > maxi) {
+			maxi = sum;
+			maxi_index = i;
+		}
+	}
+	return (int) PROBS[maxi_index][1];
+}
+
+
+//Try and create route for ant k
 void ACO::route (int antk) {
+	//Set initial city
 	ROUTES[antk][0] = INITIALCITY;
-	for (int i=0; i<NUMBEROFCITIES-1; i++) {		
+	//For all other cities 
+	for (int i=0; i<NUMBEROFCITIES-1; i++) {
 		int cityi = ROUTES[antk][i];
+		//Init visiting probabilities for other cities
 		int count = 0;
 		for (int c=0; c<NUMBEROFCITIES; c++) {
+			//if current city continue.
 			if (cityi == c) {
 				continue;	
 			}
+			//if not visited city and edge exists
 			if (exists (cityi, c)) {
 				if (!vizited (antk, c)) {
+					//Set visiting probability and city in PROBS array
 					PROBS[count][0] = PHI (cityi, c, antk);
 					PROBS[count][1] = (double) c;
 					count++;
@@ -204,14 +238,17 @@ void ACO::route (int antk) {
 		if (0 == count) {
 			return;
 		}
-		
-		ROUTES[antk][i+1] = city();
+		//Set next city in route as city 
+		ROUTES[antk][i+1] = city(count);
 	}
 }
+
 int ACO::valid (int antk, int iteration) {
 	for(int i=0; i<NUMBEROFCITIES-1; i++) {
+		//Routes are intially set to -1
 		int cityi = ROUTES[antk][i];
 		int cityj = ROUTES[antk][i+1];
+
 		if (cityi < 0 || cityj < 0) {
 			return -1;	
 		}

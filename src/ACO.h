@@ -27,6 +27,7 @@ private:
 	double length (int antk);
 	
 	int city ();
+	int city(int count);
 	void route (int antk);
 	int valid (int antk, int iteration);
 	

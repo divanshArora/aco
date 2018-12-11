@@ -1,0 +1,2 @@
+city(count) and city() are two functions.
+city(count) gives same route in this example
