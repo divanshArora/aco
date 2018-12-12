@@ -28,7 +28,7 @@ private:
 	
 	int city ();
 	int city(int count);
-	void route (int antk);
+	void route (int antk, int initial_city);
 	int valid (int antk, int iteration);
 	
 	void updatePHEROMONES ();

@@ -30,7 +30,7 @@
 #define RO				(double) 0.2
 // Maximum pheromone random number.
 #define TAUMAX			(int) 2
-
+// Not used
 #define INITIALCITY		(int) 0
 
 int main() {
@@ -73,9 +73,9 @@ int main() {
 	ANTS -> setCITYPOSITION (7, 20, 30);
 	// ANTS -> setCITYPOSITION(8, 26, 20);
 
-	ANTS -> printGRAPH ();
+	// ANTS -> printGRAPH ();
 
-	ANTS -> printPHEROMONES ();
+	// ANTS -> printPHEROMONES ();
 
 	ANTS -> optimize (ITERATIONS);
 

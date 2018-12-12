@@ -3,10 +3,10 @@
 #include <cstdio>
 #include <iostream>
 #include <cstdlib>
-
 #include <cmath>
 #include <limits>
 #include <climits>
+#include <random>
 
 using namespace std;
 
@@ -40,6 +40,7 @@ ACO::~ACO () {
 	delete [] DELTAPHEROMONES;
 	delete [] PROBS;
 }
+
 
 void ACO::init () {
 	GRAPH 			= new int*[NUMBEROFCITIES];
@@ -82,7 +83,8 @@ void ACO::init () {
 //Adds connection in graph and pheromone
 void ACO::connectCITIES (int cityi, int cityj) {
 	GRAPH[cityi][cityj] = 1;
-	PHEROMONES[cityi][cityj] = randoms -> Uniforme() * TAUMAX;
+	// PHEROMONES[cityi][cityj] = randoms -> Uniforme() * TAUMAX;
+	PHEROMONES[cityi][cityj] = 1/(double)TAUMAX;	
 	//Symmetric
 	GRAPH[cityj][cityi] = 1;
 	PHEROMONES[cityj][cityi] = PHEROMONES[cityi][cityj];
@@ -209,10 +211,12 @@ int ACO::city (int count) {
 
 
 //Try and create route for ant k
-void ACO::route (int antk) {
+void ACO::route (int antk, int initial_city) {
 	//Set initial city
-	ROUTES[antk][0] = INITIALCITY;
-	//For all other cities 
+
+
+	ROUTES[antk][0] = initial_city;
+	//For all other cities
 	for (int i=0; i<NUMBEROFCITIES-1; i++) {
 		int cityi = ROUTES[antk][i];
 		//Init visiting probabilities for other cities
@@ -262,7 +266,7 @@ int ACO::valid (int antk, int iteration) {
 		}
 	}
 	
-	if (!exists (INITIALCITY, ROUTES[antk][NUMBEROFCITIES-1])) {
+	if (!exists (ROUTES[antk][0], ROUTES[antk][NUMBEROFCITIES-1])) {
 		return -4;
 	}
 	
@@ -288,7 +292,15 @@ void ACO::printGRAPH () {
 				cout << "x ";	
 			}
 			else {
-				cout << GRAPH[i][j] << " ";	
+				cout << GRAPH[i][j] << " ";
+				if(GRAPH[i][j]==1)
+				{
+					cout<<","<<distance(i,j)<<" ";
+				}	
+				else
+				{
+					cout<<",- ";
+				}
 			}
 			if (GRAPH[i][j] == 1) {
 				count++;	
@@ -300,10 +312,17 @@ void ACO::printGRAPH () {
 	cout << "Number of connections: " << count << endl << endl;
 }
 void ACO::printRESULTS () {
-	BESTLENGTH += distance (BESTROUTE[NUMBEROFCITIES-1], INITIALCITY);
+	BESTLENGTH += distance (BESTROUTE[NUMBEROFCITIES-1], BESTROUTE[0]);
 	cout << " BEST ROUTE:" << endl;
 	for (int i=0; i<NUMBEROFCITIES; i++) {
 		cout << BESTROUTE[i] << " ";
+	}
+	cout<<endl;
+	cout<<"num cities = "<<NUMBEROFCITIES<<endl;
+	for (int i=0; i<NUMBEROFCITIES; i++) {
+		int u = BESTROUTE[i];
+		int v = BESTROUTE[(i+1)%NUMBEROFCITIES];
+		cout << GRAPH[u][v] << " ";
 	}
 	cout << endl << "length: " << BESTLENGTH << endl;
 	
@@ -338,12 +357,24 @@ void ACO::optimize (int ITERATIONS) {
 
 		for (int k=0; k<NUMBEROFANTS; k++) {
 			cout << " : ant " << k << " has been released!" << endl;
+			    const int range_from  = 0;
+			    const int range_to    = NUMBEROFCITIES-1; //Since range is inclusive
+			    std::random_device                  rand_dev;
+			    std::mt19937                        generator(rand_dev()); //Seed the generator
+			    std::uniform_int_distribution<int>  distr(range_from, range_to);			
+				int initial_city = distr(generator);
+
 			while (0 != valid(k, iterations)) {
 				cout << "  :: releasing ant " << k << " again!" << endl;
 				for (int i=0; i<NUMBEROFCITIES; i++) {
 					ROUTES[k][i] = -1;	
 				}
-				route(k);
+				route(k, initial_city);
+				// if(0 == valid(k, iterations))
+				// {
+				// 	break;
+				// }
+				initial_city = distr(generator);
 			}
 			
 			for (int i=0; i<NUMBEROFCITIES; i++) {

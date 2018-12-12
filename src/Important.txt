@@ -1,2 +1,9 @@
 city(count) and city() are two functions.
 city(count) gives same route in this example
+
+Algorithm gives random initial pheromone
+
+TODO: Initial city change to random
+TODO: Check if random generator range is actually incluive and if it is working
+TODO: fix seed
+TODO: Check compatibility of random number generator
